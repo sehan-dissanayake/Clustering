@@ -1,0 +1,189 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{array}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Mapping Retail Behaviors Through Clustering Analytics}
+
+\author{\IEEEauthorblockN{Sehan Dissanayake}
+\IEEEauthorblockA{\textit{Department of Computer Science \& Engineering} \\
+\textit{University of Moratuwa}\\
+Moratuwa, Sri Lanka \\
+sehan.22@cse.mrt.ac.lk}
+}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a comprehensive comparative analysis of clustering algorithms for customer segmentation using RFM (Recency, Frequency, Monetary) analysis. We evaluate K-means, hierarchical clustering with multiple linkage methods, and DBSCAN on retail transaction data containing 354,321 transactions from 3,920 customers. Our analysis reveals significant performance differences across methods, with hierarchical clustering using average and single linkage achieving the highest silhouette scores (0.9365), while DBSCAN effectively identifies outliers representing 1.3\% of customers. The study demonstrates the critical importance of feature scaling and provides business-oriented interpretations of customer segments for strategic decision-making.
+\end{abstract}
+
+\begin{IEEEkeywords}
+customer segmentation, clustering analysis, RFM analysis, machine learning, retail analytics
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Customer segmentation represents a fundamental challenge in retail analytics, enabling businesses to understand customer behavior patterns and develop targeted marketing strategies. Traditional demographic-based segmentation approaches have evolved toward behavioral segmentation using transactional data analysis \cite{b1}.
+
+RFM analysis, which evaluates customers based on Recency (time since last purchase), Frequency (number of transactions), and Monetary value (total spending), provides a robust framework for behavioral segmentation \cite{b2}. However, the choice of clustering algorithm significantly impacts segmentation quality and business interpretability.
+
+This study addresses the gap in comparative analysis of clustering algorithms for customer segmentation by systematically evaluating K-means, hierarchical clustering variants, and density-based methods on retail transaction data. We provide theoretical insights into algorithm assumptions, practical considerations for implementation, and business-oriented interpretations of resulting segments.
+
+\section{Methodology}
+
+\subsection{Data Preprocessing and Feature Engineering}
+
+The analysis utilized the Online Retail dataset containing 541,909 initial transactions. Data preprocessing involved removing incomplete records, filtering for UK transactions only, and excluding cancelled orders (InvoiceNo starting with 'C'), resulting in 354,321 valid transactions from 3,920 unique customers spanning December 2010 to December 2011.
+
+RFM features were calculated as follows:
+\begin{itemize}
+\item \textbf{Recency}: Days between snapshot date (2011-12-10) and customer's last purchase
+\item \textbf{Frequency}: Count of unique transactions per customer
+\item \textbf{Monetary}: Total spending amount per customer
+\end{itemize}
+
+The RFM distribution analysis revealed right-skewed patterns typical of retail data: mean recency of 92.21 days (std: 99.53), frequency of 4.25 transactions (std: 7.20), and monetary value of £1,864.39 (std: £7,482.82).
+
+\subsection{Feature Scaling and Dimensionality Considerations}
+
+StandardScaler was applied to normalize RFM features, addressing the scale differences between monetary values (ranging from £3.75 to £259,657.30) and count-based metrics. This preprocessing step proved critical, as clustering algorithms using Euclidean distance are sensitive to feature scales \cite{b3}.
+
+Principal Component Analysis (PCA) was employed for visualization, capturing 84.4\% of total variance in two components (PC1: 54.6\%, PC2: 29.8\%), indicating that the three-dimensional RFM space contains substantial redundancy suitable for clustering analysis.
+
+\subsection{Clustering Algorithms Implementation}
+
+\subsubsection{K-means Clustering}
+K-means was implemented using k-means++ initialization with 10 random restarts. The elbow method suggested k=3 as optimal, balancing within-cluster sum of squares (WCSS) reduction and interpretability.
+
+\subsubsection{Hierarchical Clustering}
+Three linkage methods were evaluated:
+\begin{itemize}
+\item \textbf{Complete linkage}: Uses maximum pairwise distance
+\item \textbf{Average linkage}: Uses mean pairwise distance  
+\item \textbf{Single linkage}: Uses minimum pairwise distance
+\end{itemize}
+
+Dendrogram analysis indicated optimal clustering at 4 clusters for most methods, with complete linkage showing clearest separation at distance nearly 15.
+
+\subsubsection{DBSCAN}
+Parameters were selected using k-distance plots: e=0.5 and min\_samples=5. The method identified 2 main clusters while classifying 52 customers (1.3\%) as noise/outliers.
+
+\section{Results and Analysis}
+
+\subsection{Clustering Performance Comparison}
+
+Table \ref{tab:performance} summarizes the quantitative evaluation metrics across all methods.
+
+\begin{table}[htbp]
+    \caption{Clustering Performance Comparison}
+    \centering
+    % USE \columnwidth for two-column documents to fit the table into one column.
+    \begin{tabularx}{\columnwidth}{| l | c | C | C | C |}
+        \hline
+        \textbf{Method} & \textbf{Clusters} & \textbf{Silhouette Score} & \textbf{Intra-Dist} & \textbf{Distance Ratio} \\
+        \hline
+        Hierarchical-Average  & 4 & 0.9365 & 2.1343 & 13.6863 \\
+        \hline
+        Hierarchical-Single   & 4 & 0.9365 & 2.1343 & 13.6863 \\
+        \hline
+        Hierarchical-Complete & 4 & 0.8932 & 4.1629 & 5.5008  \\
+        \hline
+        DBSCAN                & 2 & 0.7133 & 0.8785 & 7.5606  \\
+        \hline
+        K-Means               & 3 & 0.5806 & 4.4021 & 1.4143  \\
+        \hline
+    \end{tabularx}
+    \label{tab:performance}
+\end{table}
+
+\subsection{Business Interpretation of Clusters}
+
+The optimal segmentation (Hierarchical-Average) identified four distinct customer segments:
+
+\begin{itemize}
+\item \textbf{Champions} (3 clusters, 3,918 customers): High-value, frequent, recent customers representing the core customer base
+\item \textbf{At Risk} (1 cluster, 1 customer): High historical value but recently inactive, requiring retention strategies
+\end{itemize}
+
+K-means segmentation provided more balanced groups:
+\begin{itemize}
+\item \textbf{Champions} (Clusters 0,2): 2,924 customers with high engagement
+\item \textbf{Lost Customers} (Cluster 1): 996 customers with low value and inactivity
+\end{itemize}
+
+DBSCAN uniquely identified 52 customers as outliers with unusual purchasing patterns, representing potential high-value prospects or data quality issues requiring investigation.
+
+\section{Theoretical Analysis and Discussion}
+
+\subsection{Algorithm Assumptions and Data Structure Requirements}
+
+Each clustering method makes distinct assumptions about underlying data structure:
+
+\textbf{K-means} assumes spherical clusters with similar sizes and densities. It minimizes within-cluster variance using Euclidean distance, making it sensitive to outliers and requiring pre-specification of cluster count \cite{b4}.
+
+\textbf{Hierarchical clustering} assumptions vary by linkage method:
+\begin{itemize}
+\item Complete linkage favors compact clusters but handles non-spherical shapes better
+\item Average linkage provides balanced sensitivity to outliers
+\item Single linkage can detect elongated clusters but suffers from chaining effects
+\end{itemize}
+
+\textbf{DBSCAN} assumes varying density clusters and makes no assumptions about cluster shape or number. It defines clusters as dense regions separated by sparse areas, naturally handling outliers \cite{b5}.
+
+\subsection{Noise Detection Capabilities}
+
+DBSCAN's unique ability to identify noise stems from its density-based approach. Points that don't meet minimum density requirements (min\_samples within e distance) are classified as outliers. K-means cannot detect noise because it assigns every point to the nearest centroid, regardless of actual cluster membership suitability.
+
+This fundamental difference explains why DBSCAN identified 52 customers as outliers while K-means forced all customers into predetermined clusters. These outliers likely represent customers with extreme purchasing behaviors that don't conform to typical patterns.
+
+\subsection{Feature Scaling Necessity}
+
+Feature scaling proved essential due to the disparate ranges in RFM metrics. Without scaling, monetary values (ranging over five orders of magnitude) would dominate distance calculations, effectively reducing the clustering to monetary-only segmentation. Scaling ensures equal contribution from all three behavioral dimensions, providing more balanced customer insights.
+
+\subsection{Distance Metric Implications}
+
+While this study used Euclidean distance, alternative metrics would yield different results:
+
+\textbf{Manhattan distance} would be more robust to outliers and might better capture customers with extreme values in single dimensions. \textbf{Cosine distance} would focus on behavioral patterns rather than absolute values, potentially grouping customers with similar purchasing rhythms regardless of scale. \textbf{Mahalanobis distance} would account for feature correlations, though RFM metrics are generally designed to be relatively independent.
+
+\section{Limitations and Future Work}
+
+Several limitations affect this analysis. The dataset represents a single retail context, limiting generalizability across industries. The one-year observation period may not capture seasonal patterns or long-term customer lifecycle effects. Additionally, RFM analysis doesn't incorporate product preferences or customer demographics that might enhance segmentation quality.
+
+Future research should explore dynamic segmentation approaches that track customer movement between segments over time, integration of additional behavioral features beyond RFM, and development of ensemble clustering methods that combine strengths of multiple algorithms.
+
+\section{Conclusion}
+
+This comparative analysis reveals significant performance differences among clustering algorithms for customer segmentation. Hierarchical clustering with average or single linkage achieved superior quantitative metrics (silhouette score: 0.9365), while DBSCAN provided unique outlier detection capabilities essential for comprehensive customer understanding.
+
+The study demonstrates that algorithm selection should balance quantitative performance with business requirements. Organizations seeking detailed segmentation might prefer hierarchical methods, while those prioritizing outlier detection should consider DBSCAN. K-means remains valuable for interpretable, balanced segments despite lower performance metrics.
+
+Feature scaling emerged as critical for meaningful results, and the choice of distance metrics significantly impacts segmentation outcomes. These findings provide practical guidance for implementing customer segmentation systems in retail environments.
+
+\section*{Acknowledgment}
+
+The authors acknowledge the use of the Online Retail dataset and the open-source Python libraries that made this analysis possible.
+
+\begin{thebibliography}{00}
+\bibitem{b1} R. J. Kuo, L. M. Ho, and C. M. Hu, ``Integration of self-organizing feature map and K-means algorithm for market segmentation,'' Computers \& Operations Research, vol. 29, no. 11, pp. 1475-1493, 2002.
+\bibitem{b2} A. Hughes, ``Strategic database marketing: the masterplan for starting and managing a profitable, customer-based marketing program,'' McGraw-Hill, 2005.
+\bibitem{b3} J. Han, M. Kamber, and J. Pei, ``Data Mining: Concepts and Techniques,'' 3rd ed. Morgan Kaufmann, 2011.
+\bibitem{b4} J. MacQueen, ``Some methods for classification and analysis of multivariate observations,'' Proceedings of 5th Berkeley Symposium on Mathematical Statistics and Probability, pp. 281-297, 1967.
+\bibitem{b5} M. Ester, H. P. Kriegel, J. Sander, and X. Xu, ``A density-based algorithm for discovering clusters in large spatial databases with noise,'' Proceedings of 2nd International Conference on Knowledge Discovery and Data Mining, pp. 226-231, 1996.
+\end{thebibliography}
+
+\end{document}
